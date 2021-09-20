@@ -81,48 +81,63 @@ class ScrapeDKBases():
 
         Returns
         -------
-        tequila : nested dictionaries in the form of
-        {<team abbreviation>: {'moneyline':<odds>, 'opponent':<opponent team abbreviation>, 'home':<1 if home, 0 if away>}, ...}.
+        games : dictionary containing teams, moneylines, totals, runlines and opponents.
 
         """
-        soup_today = self.soup_setup(f"https://sportsbook.draftkings.com/leagues/baseball/2003?category=game-lines-&subcategory=game")
+        dk_api = requests.get("https://sportsbook-us-nj.draftkings.com//sites/US-NJ-SB/api/v4/eventgroups/88670847?includePromotions=true&format=json").json()
+        dk_markets = dk_api['eventGroup']['offerCategories'][0]['offerSubcategoryDescriptors'][0]['offerSubcategory']['offers']
         
-        teams = []
-        opponents = []
-        home = []
-        team_soup = soup_today.findAll('span', {'class':'event-cell__name'})
-        #iterating over the range of the length of team_soup will allow us to
-        #discern opponents and home/away
-        for i in range(len(team_soup)):
-            city = self.team_cleanup(team_soup[i].text)
-            teams.append(city)
+        games = {}
+        for i in dk_markets:
+            away_team = self.team_cleanup(i[2]['outcomes'][0]['label'])
+            home_team = self.team_cleanup(i[2]['outcomes'][1]['label'])
             
-            #Teams with an even (or 0) numbered index are away, odd are home:
-            if i % 2 == 0:
-                oppo_city = self.team_cleanup(team_soup[i+1].text)
-                home.append(0)
-            else:
-                oppo_city = self.team_cleanup(team_soup[i-1].text)
-                home.append(1)
-            opponents.append(oppo_city)
-        
-        odds = []
-        #Get moneyline odds, convert to percentages and add to a list
-        odds_soup = soup_today.findAll('span', {'class':'sportsbook-odds american default-color'})
-        for i in odds_soup:
-            odd = int(i.text.replace('+', ''))
+            if away_team not in games: 
+                games[away_team] = {}
+                try:
+                    games[away_team]['moneyline'] = i[2]['outcomes'][0]['oddsDecimal']
+                except:
+                    pass
+                try:
+                    games[away_team]['runline'] = [i[0]['outcomes'][0]['line'],
+                                                   i[0]['outcomes'][0]['oddsDecimal']]
+                except:
+                    pass
+                try:
+                    games[away_team]['over'] = [i[1]['outcomes'][0]['line'],
+                                                i[1]['outcomes'][0]['oddsDecimal']]
+                except:
+                    pass
+                try:
+                    games[away_team]['under'] = [i[1]['outcomes'][1]['line'],
+                                                 i[1]['outcomes'][1]['oddsDecimal']]
+                except:
+                    pass            
             
-            if odd > 0:
-                pct = round(1 / ((odd/100) + 1), 4)
-            else:
-                pct = round(1 - (1 / ((-1*odd/100) + 1)), 4)
+                games[away_team]['opponent'] = home_team
 
-            odds.append(pct)            
-            
-        tequila = {}
-        #Combine everything into a beautifully named dictionary:
-        for i in range(len(teams)):
-            tequila[teams[i]] = {'moneyline':odds[i], 'opponent':opponents[i],
-                                 'home':home[i]}
-        
-        return tequila
+            if home_team not in games:
+                games[home_team] = {}
+                try:
+                    games[home_team]['moneyline'] = i[2]['outcomes'][1]['oddsDecimal']
+                except:
+                    pass
+                try:
+                    games[home_team]['runline'] = [i[0]['outcomes'][1]['line'],
+                                                   i[0]['outcomes'][1]['oddsDecimal']]
+                except:
+                    pass
+                try:
+                    games[home_team]['over'] = [i[1]['outcomes'][0]['line'],
+                                                i[1]['outcomes'][0]['oddsDecimal']]
+                except:
+                    pass
+                try:
+                    games[home_team]['under'] = [i[1]['outcomes'][1]['line'],
+                                                 i[1]['outcomes'][1]['oddsDecimal']]
+                except:
+                    pass   
+                
+                games[home_team]['opponent'] = away_team
+                
+        return games
