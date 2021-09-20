@@ -1,5 +1,5 @@
 # DKscraPy
-Scrape Draftkings Sportsbook using Python's Beautiful Soup library.
+Scrape Draftkings Sportsbook using Python's Beautiful Soup library and DraftKings' API.
 
 ## Available Scrapers:
 * MLB World Series Odds
