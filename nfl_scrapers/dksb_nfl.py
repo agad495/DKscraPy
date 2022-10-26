@@ -16,10 +16,10 @@ class NFLScraper():
 
         """
         if half == 0:
-            dk_api = requests.get("https://sportsbook-us-nj.draftkings.com//sites/US-NJ-SB/api/v4/eventgroups/88670561?includePromotions=true&format=json").json()
+            dk_api = requests.get("https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808?format=json").json()
             dk_markets = dk_api['eventGroup']['offerCategories'][0]['offerSubcategoryDescriptors'][0]['offerSubcategory']['offers']
         elif half == 1:
-            dk_api = requests.get("https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v4/eventgroups/88670561/categories/526?format=json").json()
+            dk_api = requests.get("https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808/categories/526?format=json").json()
             for i in dk_api['eventGroup']['offerCategories']:
                 if i['name'] == 'Halves':
                         dk_markets = i['offerSubcategoryDescriptors'][0]['offerSubcategory']['offers']
