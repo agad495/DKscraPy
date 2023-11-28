@@ -80,10 +80,10 @@ class NFLScraper():
                 
         return games
 
-        def nfl_props_dk(self):
+    def nfl_props_dk(self):
         games = {}
-        for cat in range(1000, 1003):
-            dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v4/eventgroups/88670561/categories/{cat}?format=json").json()
+        for cat in range(1000, 1001):
+            dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808/categories/{cat}?format=json").json()
             for i in dk_api['eventGroup']['offerCategories']:
                 if 'offerSubcategoryDescriptors' in i:
                     dk_markets = i['offerSubcategoryDescriptors']
@@ -93,7 +93,7 @@ class NFLScraper():
                 subcategoryIds.append(i['subcategoryId'])
                         
             for ids in subcategoryIds:
-                dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v4/eventgroups/88670561/categories/{cat}/subcategories/{ids}?format=json").json()
+                dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808/categories/{cat}/subcategories/{ids}?format=json").json()
                 for i in dk_api['eventGroup']['offerCategories']:
                     if 'offerSubcategoryDescriptors' in i:
                         dk_markets = i['offerSubcategoryDescriptors']
