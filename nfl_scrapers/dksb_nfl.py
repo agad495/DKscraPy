@@ -80,44 +80,45 @@ class NFLScraper():
                 
         return games
 
-    def nfl_props_dk(self):
+    def nfl_props_dk(self, categories=[1000, 1001, 1002]):
         games = {}
-        for cat in range(1000, 1001):
+        for cat in categories:
             dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808/categories/{cat}?format=json").json()
-            for i in dk_api['eventGroup']['offerCategories']:
-                if 'offerSubcategoryDescriptors' in i:
-                    dk_markets = i['offerSubcategoryDescriptors']
-            
-            subcategoryIds = []# Need subcategoryIds first
-            for i in dk_markets:
-                subcategoryIds.append(i['subcategoryId'])
-                        
-            for ids in subcategoryIds:
-                dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808/categories/{cat}/subcategories/{ids}?format=json").json()
+            if 'eventGroup' in dk_api:
                 for i in dk_api['eventGroup']['offerCategories']:
                     if 'offerSubcategoryDescriptors' in i:
                         dk_markets = i['offerSubcategoryDescriptors']
                 
+                subcategoryIds = []# Need subcategoryIds first
                 for i in dk_markets:
-                    if 'offerSubcategory' in i:
-                        market = i['name']
-                        for j in i['offerSubcategory']['offers']:
-                            for k in j:
-                                if 'participant' in k['outcomes'][0]:
-                                    player = k['outcomes'][0]['participant']
-                                else:
-                                    continue
-                                
-                                if player not in games:
-                                    games[player] = {}
+                    subcategoryIds.append(i['subcategoryId'])
+                            
+                for ids in subcategoryIds:
+                    dk_api = requests.get(f"https://sportsbook.draftkings.com//sites/US-NJ-SB/api/v5/eventgroups/88808/categories/{cat}/subcategories/{ids}?format=json").json()
+                    for i in dk_api['eventGroup']['offerCategories']:
+                        if 'offerSubcategoryDescriptors' in i:
+                            dk_markets = i['offerSubcategoryDescriptors']
+                    
+                    for i in dk_markets:
+                        if 'offerSubcategory' in i:
+                            market = i['name']
+                            for j in i['offerSubcategory']['offers']:
+                                for k in j:
+                                    if 'participant' in k['outcomes'][0]:
+                                        player = k['outcomes'][0]['participant']
+                                    else:
+                                        continue
                                     
-                                try:
-                                    games[player][market] = {'over':[k['outcomes'][0]['line'],
-                                                                     k['outcomes'][0]['oddsDecimal']],
-                                                             'under':[k['outcomes'][1]['line'],
-                                                                     k['outcomes'][1]['oddsDecimal']]}
-                                except:
-                                    print(player, market)
-                                    pass
+                                    if player not in games:
+                                        games[player] = {}
+                                        
+                                    try:
+                                        games[player][market] = {'over':[k['outcomes'][0]['line'],
+                                                                         k['outcomes'][0]['oddsDecimal']],
+                                                                 'under':[k['outcomes'][1]['line'],
+                                                                         k['outcomes'][1]['oddsDecimal']]}
+                                    except:
+                                        print(player, market)
+                                        pass
                 
         return games
